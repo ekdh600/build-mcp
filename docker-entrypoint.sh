@@ -14,4 +14,4 @@ export HOST=0.0.0.0
 export PORT=3000
 export ENABLE_UNSAFE_SSE_TRANSPORT=1
 export DEBUG='*'
-node dist/index.js
+exec node dist/index.js
