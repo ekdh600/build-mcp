@@ -38,9 +38,12 @@ export async function dockerRun(args: { name?: string; image: string; options?: 
   const cmdParts: string[] = ["docker", "run"];
 
   // options (이미 -d, --name 등 포함 가능)
-  if (args.options) {
-    cmdParts.push(...args.options.split(" ").filter(Boolean));
+  let optionsArr = args.options ? args.options.split(" ").filter(Boolean) : [];
+  // -d 옵션이 없으면 강제 추가
+  if (!optionsArr.includes("-d") && !optionsArr.includes("--detach")) {
+    optionsArr.unshift("-d");
   }
+  cmdParts.push(...optionsArr);
 
   // --name 옵션: options에 없으면 추가
   if (args.name && !(args.options && (args.options.includes("--name") || args.options.includes(`--name=${args.name}`)))) {
