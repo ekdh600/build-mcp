@@ -74,3 +74,38 @@ npm start
 실제 build/push/run 등은 child_process로 docker CLI를 호출합니다.
 
 ---
+
+## 🐳 DinD(Docker-in-Docker) 완전 분리형 MCP 서버 실전 배포 가이드
+
+### 1. 최신 이미지 빌드 및 도커허브 푸시
+```bash
+docker build -t ekdh600/build-mcp:latest .
+docker push ekdh600/build-mcp:latest
+```
+
+### 2. 최신 코드 git 커밋/푸시
+```bash
+cd docker-build-mcp-ts
+git add .
+git commit -m "docs: DinD 구조 및 쿠버네티스 대응 최신화"
+git push
+```
+
+### 3. DinD 기반 완전 분리형 컨테이너 구동(쿠버네티스 대응)
+- **호스트 도커 소켓 마운트 없이, 내부 dockerd만 사용**
+- 쿠버네티스 환경에서도 동일하게 동작
+
+```bash
+docker run --privileged --name build-mcp -d -p 3000:3000 ekdh600/build-mcp:latest
+```
+
+- 내부 dockerd가 자동으로 기동되고 MCP 서버가 0.0.0.0:3000에서 listen
+- MCP 툴(docker_ps, docker_run 등)은 컨테이너 내부 도커 환경만 제어(호스트와 완전 분리)
+- 커서/클라우드/쿠버네티스 환경에서도 동일하게 MCP 서버로 등록하여 사용 가능
+
+### 4. MCP 툴 실전 사용 예시(커서/클라우드)
+- MCP 서버 주소: `http://<호스트IP>:3000`
+- 커서에서 MCP 서버 등록 후 docker_ps, docker_run 등 사용
+- 생성/조회되는 컨테이너는 모두 DinD 내부 환경에만 존재
+
+---
