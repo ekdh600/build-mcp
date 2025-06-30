@@ -1,6 +1,6 @@
 #!/bin/sh
-# 도커 데몬 실행 (백그라운드)
-dockerd-entrypoint.sh &
+# 도커 데몬을 /var/run/docker.sock로 리스닝하도록 명시
+exec dockerd-entrypoint.sh --host=unix:///var/run/docker.sock &
 
 # 도커 데몬이 준비될 때까지 대기
 while ! docker info > /dev/null 2>&1; do
@@ -10,10 +10,9 @@ done
 
 echo "dockerd is ready!"
 
-# MCP 서버 실행 (외부에서 접근 가능)
 export HOST=0.0.0.0
 export PORT=3000
 export ENABLE_UNSAFE_SSE_TRANSPORT=1
 export DEBUG='*'
-export DOCKER_HOST=tcp://localhost:2375
+export DOCKER_HOST=unix:///var/run/docker.sock
 node dist/index.js
