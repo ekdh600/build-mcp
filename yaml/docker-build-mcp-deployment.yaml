@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: docker-build-mcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: docker-build-mcp
+  template:
+    metadata:
+      labels:
+        app: docker-build-mcp
+    spec:
+      containers:
+      - name: build-mcp
+        image: ekdh600/build-mcp:latest
+        imagePullPolicy: Always
+        securityContext:
+          privileged: true
+        ports:
+        - containerPort: 3000
+        env:
+        - name: NODE_ENV
+          value: production
+        resources:
+          requests:
+            cpu: "1"
+            memory: "2Gi"
+          limits:
+            cpu: "2"
+            memory: "4Gi"
+        volumeMounts:
+        - name: docker-config
+          mountPath: /root/.docker     # 프라이빗 레지스트리 인증
+      volumes:
+      - name: docker-config
+        secret:
+          secretName: my-docker-config
+          items:
+          - key: config.json
+            path: config.json
+      # 보안: 네임스페이스/네트워크 정책 등은 별도 적용 권장
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: docker-build-mcp
+spec:
+  selector:
+    app: docker-build-mcp
+  ports:
+  - protocol: TCP
+    port: 3000
+    targetPort: 3000
+    nodePort: 32000   # 원하는 포트로 조정 가능
+  type: NodePort   # 외부 노출용

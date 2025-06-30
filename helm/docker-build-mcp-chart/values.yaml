@@ -1,0 +1,19 @@
+image:
+  repository: ekdh600/build-mcp
+  tag: latest
+  pullPolicy: Always
+
+service:
+  type: NodePort
+  port: 3000
+  nodePort: 32000
+
+resources:
+  requests:
+    cpu: "1"
+    memory: "2Gi"
+  limits:
+    cpu: "2"
+    memory: "4Gi"
+
+secretName: my-docker-config
